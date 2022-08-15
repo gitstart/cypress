@@ -9,10 +9,10 @@ jobs:
 
   linters:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [16.14.2]
+    container:
+      image: cypress/browsers:node16.14.2-slim-chrome100-ff99-edge
+      env:
+        PLATFORM: linux
 
     steps:
       - name: Cancel Previous Runs
@@ -28,12 +28,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ~/.yarn
-          key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node-version }}
+          key: ${{ runner.os }}-node-16-14-2-yarn-${{ hashFiles('**/yarn.lock') }}
 
       - name: node_modules_install
         run: |
