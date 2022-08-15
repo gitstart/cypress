@@ -1,0 +1,53 @@
+name: Checks
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+
+  linters:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.14.2]
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.7.0
+        with:
+          access_token: ${{ github.token }}
+      - uses: actions/checkout@v2
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - uses: actions/cache@v2
+        with:
+          path: ~/.yarn
+          key: ${{ runner.os }}-node-${{ matrix.node-version }}-yarn-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: node_modules_install
+        run: |
+          PERCY_POSTINSTALL_BROWSER=true yarn --prefer-offline --frozen-lockfile --cache-folder ~/.yarn
+          
+      - name: build-and-persist
+        run: yarn gulp buildProd
+
+      - name: check-ts
+        run: NODE_OPTIONS=--max_old_space_size=4096 yarn gulp checkTs
+
+      - name: lint
+        run: |
+          yarn clean
+          git clean -df
+          yarn lint
+          node cli/bin/cypress info --dev
