@@ -40,9 +40,12 @@ jobs:
         run: yarn gulp buildProd
 
       - name: check-ts
-        run: NODE_OPTIONS=--max_old_space_size=4096 yarn gulp checkTs
+        if: ${{ failure() || success() }}
+        # run: NODE_OPTIONS=--max_old_space_size=4096 yarn gulp checkTs
+        run: yarn lerna run check-ts
 
       - name: lint
+        if: ${{ failure() || success() }}
         run: |
           yarn clean
           git clean -df
