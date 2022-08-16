@@ -36,14 +36,17 @@ jobs:
         run: |
           PERCY_POSTINSTALL_BROWSER=true yarn --prefer-offline --frozen-lockfile --cache-folder ~/.yarn
 
-      - name: lerna bootstrap
-        run: yarn lerna bootstrap
+      # - name: lerna bootstrap
+      #   run: yarn lerna bootstrap
 
       - name: postinstall
         run: yarn lerna run postinstall
-          
-      - name: build-and-persist
+
+      - name: buildProd
         run: yarn gulp buildProd
+
+      - name: build
+        run: yarn build
 
       - name: check-ts
         if: ${{ failure() || success() }}
