@@ -88,6 +88,8 @@ export async function checkPackageTsc ({
       `/${pkg.replace(/\@(packages|cypress)\//, '')}`,
     )
 
+    console.log({ cwd })
+
     try {
       built++
       await execAsync('yarn check-ts', { cwd })
