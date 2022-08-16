@@ -36,6 +36,9 @@ jobs:
         run: |
           PERCY_POSTINSTALL_BROWSER=true yarn --prefer-offline --frozen-lockfile --cache-folder ~/.yarn
 
+      - name: lerna bootstrap
+        run: yarn lerna bootstrap
+
       - name: postinstall
         run: yarn lerna run postinstall
           
