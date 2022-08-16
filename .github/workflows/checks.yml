@@ -35,6 +35,9 @@ jobs:
       - name: node_modules_install
         run: |
           PERCY_POSTINSTALL_BROWSER=true yarn --prefer-offline --frozen-lockfile --cache-folder ~/.yarn
+
+      - name: postinstall
+        run: yarn lerna run postinstall
           
       - name: build-and-persist
         run: yarn gulp buildProd
