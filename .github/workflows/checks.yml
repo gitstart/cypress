@@ -1,0 +1,62 @@
+name: Checks
+
+on:
+  push:
+    branches-ignore:
+      - main
+
+jobs:
+
+  linters:
+    runs-on: ubuntu-latest
+    # container:
+    #   image: cypress/browsers:node16.14.2-slim-chrome100-ff99-edge
+    #   env:
+    #     PLATFORM: linux
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.7.0
+        with:
+          access_token: ${{ github.token }}
+      - uses: actions/checkout@v2
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.yarn
+            ./node_modules
+          key: ${{ runner.os }}-node-16-14-2-yarn-${{ hashFiles('**/yarn.lock') }}
+
+      - name: node_modules_install
+        run: |
+          PERCY_POSTINSTALL_BROWSER=true yarn --prefer-offline --frozen-lockfile --cache-folder ~/.yarn
+
+      # - name: lerna bootstrap
+      #   run: yarn lerna bootstrap
+
+      - name: postinstall
+        run: yarn lerna run postinstall
+
+      - name: buildProd
+        run: yarn gulp buildProd
+
+      - name: build
+        run: yarn build
+
+      - name: check-ts
+        if: ${{ failure() || success() }}
+        # run: NODE_OPTIONS=--max_old_space_size=4096 yarn gulp checkTs
+        run: yarn lerna run check-ts
+
+      - name: lint
+        if: ${{ failure() || success() }}
+        run: |
+          yarn clean
+          git clean -df
+          yarn lint
+          node cli/bin/cypress info --dev
